@@ -13,6 +13,33 @@ It combines a fast screening pipeline, deep Gemini verification, durable memory 
 - Supports natural-language query over recent events and activities.
 
 
+## DEMO
+
+
+### System configuration:
+- Configure streams, triggers, and processing parameters for each camera source.
+
+- Manage thresholds, query rules, and system behavior for reliable real-time monitoring.
+
+![Vigilens system setup](assets/demo_connect.png)
+
+### Streaming view:
+
+- Live CCTV feed with real-time event detection and prioritized alert stream.
+
+- Highlights critical activities with severity levels, timestamps, and quick clip access.
+
+![Vigilens Streaming](assets/demo_stream.png)
+
+
+### Query history:
+
+- Natural language search over video streams to retrieve relevant moments instantly.
+
+- Returns timestamped clips with concise descriptions and an aggregated AI summary.
+
+![Vigilens history](assets/demo_query.png)
+
 
 
 
