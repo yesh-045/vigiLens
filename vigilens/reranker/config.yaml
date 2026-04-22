@@ -1,0 +1,33 @@
+model:
+  name: Qwen/Qwen3-VL-Reranker-2B
+  revision: 9887917432733561ed27603b14ea9968af048678
+  max_model_len: 16384
+
+service:
+  name: reranker-service
+  image: nvidia/cuda:13.1.0-devel-ubuntu22.04
+  gpu: A10 # T4, L4, L4S, A10, A100, H100, etc.
+  n_gpu: 1
+  port: 8000
+  startup_timeout: 10
+  max_concurrent_requests: 32 # how many requests can one replica handle? tune carefully!
+  scaledown_window: 10 #  how long should we stay up with no requests? minutes
+  timeout: 10  # how long should we wait for container start? minutes
+  fast_boot: false # enforce-eager disables both Torch compilation and CUDA graph capture
+  volumes:
+    - name: huggingface-cache
+      path: /root/.cache/huggingface
+    - name: vllm-cache
+      path: /root/.cache/vllm
+  secrets: # create secrets in modal dashboard.
+    - name: vllm-api-key
+      env_var: VLLM_API_KEY
+    - name: huggingface-secret
+      env_var: HF_TOKEN
+  pip_install:
+    - vllm==0.15.1
+    - huggingface-hub==0.36.0
+  env:
+    HF_XET_HIGH_PERFORMANCE: "1"
+  min_containers: 0
+  max_containers: 1

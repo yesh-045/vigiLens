@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VigiLens Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="noise-layer" aria-hidden="true"></div>
+    <main class="dashboard-layout" id="dashboard-layout">
+      <aside class="camera-sidebar" id="camera-sidebar" aria-label="Camera presets">
+        <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-expanded="true" aria-controls="sidebar-body">
+          <span class="toggle-arrow" aria-hidden="true">‹</span>
+          <span class="toggle-label">Cameras</span>
+        </button>
+        <div class="sidebar-body" id="sidebar-body">
+          <p class="sidebar-title">Quick Camera Select</p>
+          <p class="sidebar-sub">Choose a preset and auto-fill stream fields.</p>
+          <ul class="camera-list" id="camera-list">
+            <li>
+              <button
+                type="button"
+                class="camera-preset is-active"
+                data-camera-id="cam_1"
+                data-stream-name="lobby-main"
+                data-rtsp-url="rtsp://host.docker.internal:8554/test"
+                data-hls-url="http://localhost:8888/test/index.m3u8"
+              >
+                <span class="preset-id">cam_1</span>
+                <span class="preset-name">Front Lobby</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="camera-preset"
+                data-camera-id="cam_2"
+                data-stream-name="parking-zone-a"
+                data-rtsp-url="rtsp://host.docker.internal:8554/parking"
+                data-hls-url="http://localhost:8888/parking/index.m3u8"
+              >
+                <span class="preset-id">cam_2</span>
+                <span class="preset-name">Parking Zone A</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="camera-preset"
+                data-camera-id="cam_3"
+                data-stream-name="loading-dock"
+                data-rtsp-url="rtsp://host.docker.internal:8554/dock"
+                data-hls-url="http://localhost:8888/dock/index.m3u8"
+              >
+                <span class="preset-id">cam_3</span>
+                <span class="preset-name">Loading Dock</span>
+              </button>
+            </li>
+          </ul>
+
+          <form id="add-camera-form" class="add-camera-form">
+            <p class="sidebar-title">Add New Camera</p>
+            <label>
+              Camera ID
+              <input id="new-camera-id" placeholder="cam_4" required />
+            </label>
+            <label>
+              Name
+              <input id="new-camera-name" placeholder="Back Entrance" required />
+            </label>
+            <label>
+              RTSP URL
+              <input id="new-camera-rtsp" placeholder="rtsp://host.docker.internal:8554/your-path" required />
+            </label>
+            <label>
+              HLS URL (optional)
+              <input id="new-camera-hls" placeholder="http://localhost:8888/your-path/index.m3u8" />
+            </label>
+            <button type="submit" class="secondary">Add Camera</button>
+          </form>
+        </div>
+      </aside>
+
+      <div class="console-shell">
+      <header class="console-topbar">
+        <div class="topbar-main">
+          <div class="brand-block">
+            
+            <h1>Vigilens Dashboard</h1>
+            <p class="help-text">Connect cameras, review alerts, and search recent moments.</p>
+            <p class="sub-meta">Camera: <span id="current-source">cam_1</span></p>
+          </div>
+          <div class="top-controls">
+            <div class="status-box" id="status-box" data-state="ready">
+              <span class="status-dot" aria-hidden="true"></span>
+              <div>
+                <p class="status-label">Session Status</p>
+                <p id="stream-status" class="status-value">Ready</p>
+              </div>
+            </div>
+            <button type="button" id="theme-toggle" class="theme-btn icon-only" aria-label="Toggle theme">
+              <span class="theme-glyph" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <nav class="screen-tabs" aria-label="Screens">
+          <button type="button" class="tab-btn is-active" data-screen-target="setup">
+            <span class="tab-icon" aria-hidden="true">01</span>
+            <span>Connect</span>
+          </button>
+          <button type="button" class="tab-btn" data-screen-target="monitor">
+            <span class="tab-icon" aria-hidden="true">02</span>
+            <span>Watch</span>
+          </button>
+          <button type="button" class="tab-btn" data-screen-target="investigate">
+            <span class="tab-icon" aria-hidden="true">03</span>
+            <span>Search</span>
+          </button>
+        </nav>
+      </header>
+
+      <section class="screen-stack">
+        <section class="screen is-active" data-screen="setup" aria-label="Setup screen">
+          <article class="glass-panel form-panel">
+            <div class="panel-head">
+              <h2>Connect Your Camera</h2>
+              <span class="chip">Step 1</span>
+            </div>
+            <form id="submit-form">
+              <div class="field-group">
+                <h3>Camera Details</h3>
+                <div class="field-grid two-col">
+                  <label>
+                    Tenant ID
+                    <input id="tenant-id" value="t_demo" required />
+                  </label>
+                  <label>
+                    Camera ID
+                    <input id="camera-id" value="cam_1" />
+                  </label>
+                </div>
+
+                <label>
+                  Stream Name
+                  <input id="stream-name" value="camera-demo-1" />
+                </label>
+
+                <label>
+                  RTSP URL
+                  <input id="rtsp-url" value="rtsp://host.docker.internal:8554/test" required />
+                </label>
+
+                <label>
+                  HLS Preview URL
+                  <input id="hls-url" value="http://localhost:8888/test/index.m3u8" />
+                </label>
+              </div>
+
+              <div class="field-group">
+                <h3>Alert Preferences</h3>
+                <div class="field-grid two-col">
+                  <label>
+                    Trigger Phrase
+                    <input id="trigger-query" value="person falling" required />
+                  </label>
+                  <label>
+                    Sensitivity
+                    <input id="threshold" type="number" min="0" max="1" step="0.01" value="0.55" required />
+                  </label>
+                </div>
+
+                <div class="field-grid two-col">
+                  <label>
+                    Capture Interval (sec)
+                    <input id="chunk-seconds" type="number" min="2" max="60" value="10" required />
+                  </label>
+                  <label>
+                    FPS
+                    <input id="fps" type="number" min="1" max="10" value="1" required />
+                  </label>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <h3>Where To Send Alerts</h3>
+                <label>
+                  Webhook URL (optional)
+                  <input id="webhook-url" placeholder="https://example.com/hook" />
+                </label>
+
+                <label>
+                  Discord Webhook URL (optional)
+                  <input id="discord-webhook-url" placeholder="https://discord.com/api/webhooks/..." />
+                </label>
+
+                <label>
+                  Backend URL
+                  <input id="api-base-url" value="http://localhost:8001" disabled />
+                </label>
+              </div>
+
+              <div class="actions">
+                <button type="submit" id="submit-btn" class="primary">Save And Start</button>
+                <button type="button" id="preview-btn" class="secondary">Open Preview</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="glass-panel side-panel">
+            <div class="panel-head">
+              <h2>What Just Happened</h2>
+              <span class="chip">Updates</span>
+            </div>
+            <p id="response-box" class="result-text">No submission yet.</p>
+            <p id="response-meta" class="meta-text">Waiting for request.</p>
+            <details>
+              <summary>View technical response</summary>
+              <pre id="response-raw">{}</pre>
+            </details>
+
+            <div class="activity-wrap">
+              <h3>Recent Activity</h3>
+              <ul id="activity-log" class="activity-list">
+                <li class="activity-item">Welcome. Add your stream details to begin.</li>
+              </ul>
+            </div>
+          </article>
+        </section>
+
+        <section class="screen" data-screen="monitor" aria-label="Monitor screen">
+          <article class="glass-panel preview-panel">
+            <div class="panel-head">
+              <h2>Camera View</h2>
+              <span class="chip">Now Playing</span>
+            </div>
+            <div class="video-wrap">
+              <video id="video" controls autoplay muted playsinline></video>
+            </div>
+          </article>
+
+          <article class="glass-panel alerts-panel">
+            <div class="panel-head">
+              <h2>Recent Alerts</h2>
+              <span id="alerts-meta" class="chip">Initializing...</span>
+            </div>
+            <ul id="alerts-list" class="item-list">
+              <li class="item-empty">No alerts yet.</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="screen" data-screen="investigate" aria-label="Investigate screen">
+          <article class="glass-panel query-panel">
+            <div class="panel-head">
+              <h2>Ask A Question</h2>
+              <span class="chip">Search</span>
+            </div>
+            <form id="query-form" class="query-form">
+              <div class="field-grid two-col">
+                <label>
+                  Search Question
+                  <input id="query-text" value="did someone fall" required />
+                </label>
+                <label>
+                  Camera Filter
+                  <input id="query-camera-id" value="cam_1" placeholder="cam_1" />
+                </label>
+              </div>
+              <div class="actions">
+                <button type="submit" id="query-btn" class="primary">Run Query</button>
+              </div>
+            </form>
+              <p id="query-meta" class="meta-text">Ask a question to see relevant moments.</p>
+          </article>
+
+          <article class="glass-panel query-results-panel">
+            <div class="panel-head">
+                <h2>Answer</h2>
+                <span class="chip">Results</span>
+            </div>
+            <ul id="query-results" class="item-list">
+                <li class="item-empty">Results will appear here after you search.</li>
+            </ul>
+          </article>
+        </section>
+      </section>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

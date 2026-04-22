@@ -1,0 +1,82 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command:
+      - uvicorn
+      - vigilens.apps.api.app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --reload
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/streams.db
+    volumes:
+      - ./vigilens:/app/vigilens
+      - sqlite_data:/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  stream_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command:
+      - python
+      - -m
+      - vigilens.apps.workers.stream.worker
+    env_file:
+      - .env
+    environment:
+      STREAM_TMP_DIR: /tmp/streams
+      DB_PATH: /data/streams.db
+    volumes:
+      - ./vigilens:/app/vigilens
+      - stream_tmp:/tmp/streams
+      - sqlite_data:/data
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  llm_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command:
+      - python
+      - -m
+      - vigilens.apps.workers.llm.worker
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/streams.db
+    volumes:
+      - ./vigilens:/app/vigilens
+      - sqlite_data:/data
+    restart: unless-stopped
+
+  scene_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command:
+      - python
+      - -m
+      - vigilens.apps.workers.scene.worker
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/streams.db
+    volumes:
+      - ./vigilens:/app/vigilens
+      - sqlite_data:/data
+    restart: unless-stopped
+
+volumes:
+  stream_tmp:
+  sqlite_data:
