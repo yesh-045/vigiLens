@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from vigilens.core.config import settings
 from vigilens.services.events import query_events, query_scene_timeline
 from vigilens.services.query_router import route_query
+from vigilens.observability import trace
 
 
 query_router = APIRouter()
@@ -31,6 +32,7 @@ class QueryResponse(BaseModel):
 
 
 @query_router.post("/query", tags=["query"], response_model=QueryResponse)
+@trace(name="run_query")
 async def run_query(payload: QueryRequest) -> QueryResponse:
     route = route_query(payload.query)
 

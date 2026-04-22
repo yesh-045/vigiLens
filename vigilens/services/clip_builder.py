@@ -5,6 +5,7 @@ from typing import Sequence
 import numpy as np
 
 from vigilens.integrations.storage import s3_client
+from vigilens.observability import trace
 
 
 def _require_cv2():
@@ -17,6 +18,7 @@ def _require_cv2():
     return cv2
 
 
+@trace(name="sample_frames_from_video", capture_outputs=False)
 def sample_frames_from_video(
     video_path: str,
     sample_every_seconds: int,
@@ -44,6 +46,7 @@ def sample_frames_from_video(
     return frames
 
 
+@trace(name="build_clip", capture_inputs=False)
 def build_clip(
     frames: Sequence[np.ndarray],
     fps: int,

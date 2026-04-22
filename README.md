@@ -237,6 +237,29 @@ SQLite tables:
 - `events`: verified event memory with dedupe key
 - `scene_timeline`: activity summary memory with compaction support
 
+## Observability (Opik)
+
+Vigilens uses [Opik](https://www.comet.com/opik) to provide observability into the platform's core pipelines. 
+
+Tracing is automatically wired into:
+- **FastAPI Endpoints**: Real-time insights into `submit_stream` and `query` executions.
+- **Workers**: End-to-end tracing of stream consumption and LLM processing jobs.
+- **LLM Calls**: Tracking of prompts, multimodal verification latency, and output tokens.
+- **Event Pipeline**: Detailed event deduplication and database persistence metrics.
+
+### Configuration
+
+To enable tracing, add your Opik credentials to your `.env` file:
+
+```env
+VIGILENS_OPIK_ENABLED=true
+OPIK_PROJECT_NAME="vigilens"
+OPIK_WORKSPACE="your-workspace-name"
+OPIK_API_KEY="your-opik-api-key"
+```
+
+If `VIGILENS_OPIK_ENABLED` is set to `false` or missing credentials, the `@trace` decorators will safely fall back to no-op modes without crashing the system. To selectively mask large payloads from the UI (like raw video matrices), inputs and outputs are dynamically filtered on heavy functions like video frame sampling.
+
 ## Reliability Features
 
 - Redis Streams consumer groups for queue-based isolation.

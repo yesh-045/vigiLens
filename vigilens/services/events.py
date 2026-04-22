@@ -11,6 +11,7 @@ from vigilens.core.db import (
     save_scene_timeline_async,
 )
 from vigilens.models.contracts.prompts import VideoAnalysisResultList
+from vigilens.observability import trace
 
 
 def _utc_now_sql() -> str:
@@ -40,6 +41,7 @@ def _event_dedupe_key(
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+@trace(name="save_verified_events")
 async def save_verified_events(
     *,
     parsed_result: VideoAnalysisResultList,
@@ -102,7 +104,9 @@ async def run_scene_retention_compression(retention_hours: int) -> int:
     return await compress_old_scene_timeline_async(retention_hours)
 
 
-async def query_events(*, camera_id: str | None, within_hours: int, limit: int) -> list[dict]:
+async def query_events(
+    *, camera_id: str | None, within_hours: int, limit: int
+) -> list[dict]:
     return await query_recent_events_async(
         camera_id=camera_id,
         within_hours=within_hours,

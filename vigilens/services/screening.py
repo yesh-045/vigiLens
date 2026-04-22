@@ -5,18 +5,20 @@ import tenacity
 import logging
 import base64
 from vigilens.integrations.llm_client import is_retryable_exception
+from vigilens.observability import trace
 
 from vigilens.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
+@trace(name="screen_chunk")
 @tenacity.retry(
     stop=tenacity.stop_after_attempt(3),
     wait=tenacity.wait_exponential(multiplier=1, min=4, max=10),
     retry=tenacity.retry_if_exception(is_retryable_exception),
 )
-async def screen_chunk(chunk_path: str, trigger_queries: List[str]) -> bool:
+async def screen_chunk(chunk_path: str, trigger_queries: List[str]) -> dict:
     async with aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=settings.screener_timeout)
     ) as session:

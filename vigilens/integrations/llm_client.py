@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 import logging
 from typing import Any
+from vigilens.observability import trace
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +136,10 @@ def construct_payload(chunk_paths) -> list:
             payload.append({"type": "video_url", "video_url": {"url": url}})
         else:
             payload.append(
-                {"type": "video_url", "video_url": {"url": video_to_data_url(chunk_path)}}
+                {
+                    "type": "video_url",
+                    "video_url": {"url": video_to_data_url(chunk_path)},
+                }
             )
     return payload
 
@@ -149,10 +153,14 @@ def _construct_gemini_parts(chunk_paths: List[str]) -> list[types.Part]:
             )
         )
         if not os.path.exists(chunk_path) or chunk_path.startswith("http"):
-            payload.append(types.Part.from_uri(file_uri=chunk_path, mime_type="video/mp4"))
+            payload.append(
+                types.Part.from_uri(file_uri=chunk_path, mime_type="video/mp4")
+            )
         else:
             with open(chunk_path, "rb") as f:
-                payload.append(types.Part.from_bytes(data=f.read(), mime_type="video/mp4"))
+                payload.append(
+                    types.Part.from_bytes(data=f.read(), mime_type="video/mp4")
+                )
     return payload
 
 
@@ -190,6 +198,7 @@ def construct_history_context(
     return context
 
 
+@trace(name="llm_analysis")
 @tenacity.retry(
     stop=tenacity.stop_after_attempt(3),
     wait=tenacity.wait_exponential(multiplier=1, min=4, max=10),
@@ -234,29 +243,33 @@ async def llm_analysis(
 
     payload = _construct_gemini_parts(chunk_paths)
     history_context = ""
-    
+
     if history:
         history_context = construct_history_context(history)
-        
+
     client = genai.Client(api_key=settings.llm_api_key)
-    
+
     contents = []
     if history_context:
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=f"History Context:\n\n{history_context}")]
-        ))
-        
+        contents.append(
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(text=f"History Context:\n\n{history_context}")
+                ],
+            )
+        )
+
     user_parts = [types.Part.from_text(text=f"query: {query}")] + payload
     contents.append(types.Content(role="user", parts=user_parts))
-    
+
     config = types.GenerateContentConfig(
         system_instruction=prompt,
         response_mime_type="application/json",
         response_schema=analysis_model,
-        temperature=0.0
+        temperature=0.0,
     )
-    
+
     response = await _generate_content_with_transport_fallback(
         client,
         model=settings.llm_model,
@@ -266,6 +279,7 @@ async def llm_analysis(
     return response.parsed
 
 
+@trace(name="summarize_scene_clip")
 @tenacity.retry(
     stop=tenacity.stop_after_attempt(3),
     wait=tenacity.wait_exponential(multiplier=1, min=2, max=8),
@@ -295,12 +309,7 @@ async def summarize_scene_clip(
             ],
             temperature=0.1,
         )
-        return (
-            raw.get("choices", [{}])[0]
-            .get("message", {})
-            .get("content", "")
-            .strip()
-        )
+        return raw.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
     client = genai.Client(api_key=settings.llm_api_key)
     prompt = (
@@ -326,6 +335,7 @@ async def summarize_scene_clip(
         config=types.GenerateContentConfig(temperature=0.1),
     )
     return (response.text or "").strip()
+
 
 if __name__ == "__main__":
     import asyncio

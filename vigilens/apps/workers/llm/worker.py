@@ -20,6 +20,7 @@ from collections import defaultdict
 from vigilens.core.db import update_stream_status_async
 from vigilens.core.db import save_event_async
 from vigilens.services.events import save_verified_events
+from vigilens.observability import configure_opik, trace
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class LLMAnalysisWorker:
     """Consumes stream jobs from Redis Streams and starts ffmpeg segmenters."""
 
     def __init__(self) -> None:
+        configure_opik()
         redis_url = settings.redis_url
         llm_stream_name = settings.llm_job_stream
         llm_group_name = settings.llm_job_group
@@ -146,10 +148,13 @@ class LLMAnalysisWorker:
             dedupe_key=dedupe_key,
         )
 
+    @trace(name="llm_worker_handle_message")
     async def _handle_message(self, message: StreamQueueMessage) -> None:
         payload = LLMJobMessage.model_validate(message.payload)
         chunk_presigned_urls = payload.chunk_presigned_urls
-        clip_url = payload.clip_url or (chunk_presigned_urls[0] if chunk_presigned_urls else "")
+        clip_url = payload.clip_url or (
+            chunk_presigned_urls[0] if chunk_presigned_urls else ""
+        )
         trigger_queries = payload.trigger_queries
         webhook_urls = payload.webhook_urls
         stream_id = payload.stream_id

@@ -8,6 +8,7 @@ from vigilens.core.config import settings
 from vigilens.integrations.redis_queue import AsyncRedisStreamQueue
 from vigilens.models.contracts.messages import StreamJobMessage
 from vigilens.core.db import create_stream_async, get_stream_async
+from vigilens.observability import trace
 
 import logging
 
@@ -53,6 +54,7 @@ class StreamResponse(BaseModel):
 
 
 @stream_router.post("/streams/submit", tags=["streams"], response_model=StreamResponse)
+@trace(name="submit_stream")
 async def submit_stream(stream: StreamCreate) -> StreamResponse:
     stream_id = f"s_{uuid.uuid4().hex[:12]}"
 

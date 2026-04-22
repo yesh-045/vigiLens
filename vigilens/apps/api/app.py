@@ -5,20 +5,26 @@ from vigilens.core.config import settings
 import logging
 from contextlib import asynccontextmanager
 from vigilens.core.db import init_db_async
+from vigilens.observability import configure_opik
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s - %(message)s",
 )
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    configure_opik()
     await init_db_async()
     yield
     # Shutdown
 
-app = FastAPI(title="vigilens-api", root_path=settings.vigilens_api_root_path, lifespan=lifespan)
+
+app = FastAPI(
+    title="vigilens-api", root_path=settings.vigilens_api_root_path, lifespan=lifespan
+)
 
 
 app.include_router(stream_router)

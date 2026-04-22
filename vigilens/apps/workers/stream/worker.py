@@ -1,12 +1,14 @@
 import os
 import time
 import asyncio
-from typing import List
-from typing import Optional
+from typing import List, Optional, Any
 from vigilens.core.config import settings
 from vigilens.integrations.redis_queue import AsyncRedisStreamQueue, StreamQueueMessage
 from vigilens.integrations.storage import s3_client
-from vigilens.apps.workers.stream.stream import start_rtsp_segmenter, wait_until_video_ready
+from vigilens.apps.workers.stream.stream import (
+    start_rtsp_segmenter,
+    wait_until_video_ready,
+)
 from vigilens.services.screening import screen_chunk
 from vigilens.models.contracts.messages import (
     LLMJobMessage,
@@ -20,6 +22,7 @@ from vigilens.services.clip_builder import (
 )
 from vigilens.core.db import update_stream_status_async
 from functools import partial
+from vigilens.observability import configure_opik, trace
 
 import traceback
 import logging
@@ -36,6 +39,7 @@ class StreamProcessWorker:
     """Consumes stream jobs from Redis Streams and starts ffmpeg segmenters."""
 
     def __init__(self) -> None:
+        configure_opik()
         redis_url = settings.redis_url
         stream_name = settings.stream_job_stream
         llm_stream_name = settings.llm_job_stream
@@ -209,7 +213,9 @@ class StreamProcessWorker:
             if not clip_path:
                 return
 
-            clip_url = await asyncio.to_thread(upload_clip_to_minio, clip_path, stream_id)
+            clip_url = await asyncio.to_thread(
+                upload_clip_to_minio, clip_path, stream_id
+            )
             scene_job = SceneJobMessage(
                 stream_id=stream_id,
                 camera_id=camera_id,
@@ -226,7 +232,9 @@ class StreamProcessWorker:
             if clip_path:
                 await asyncio.to_thread(self._delete_if_exists, clip_path)
 
-    def _on_done_screening_loop_cb(self, task: asyncio.Task, message_id: str, stream_id: str):
+    def _on_done_screening_loop_cb(
+        self, task: asyncio.Task, message_id: str, stream_id: str
+    ):
         try:
             exc = (
                 task.exception()
@@ -387,7 +395,8 @@ class StreamProcessWorker:
                 except Exception:
                     logger.error("Ingest loop error:\n" + traceback.format_exc())
 
-    async def _handle_message(self, message: StreamQueueMessage) -> None:
+    @trace(name="stream_worker_handle_message")
+    async def _handle_message(self, message: StreamQueueMessage) -> Any:
 
         message_id = message.message_id
 
@@ -478,7 +487,11 @@ class StreamProcessWorker:
                     )
                 )
                 screening_task.add_done_callback(
-                    partial(self._on_done_screening_loop_cb, message_id=message_id, stream_id=stream_id)
+                    partial(
+                        self._on_done_screening_loop_cb,
+                        message_id=message_id,
+                        stream_id=stream_id,
+                    )
                 )
         except Exception as e:
             logger.error(
