@@ -295,6 +295,4 @@ Result: retries and reclaimed messages do not duplicate event rows.
 
 
 
-
-
 The architecture is queue-centric, SQL-memory backed, and optimized for real-time surveillance/event workflows.
