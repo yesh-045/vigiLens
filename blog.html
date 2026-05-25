@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigilens - Real-time Video Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080808;
+    --bg1: #0e0e0e;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.1);
+    --text: #e8e8e8;
+    --muted: #9b9b9b;
+    --dim: #6e6e6e;
+    --accent: #fff;
+    --font: 'Geist', -apple-system, sans-serif;
+    --mono: 'Geist Mono', 'Courier New', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ── Layout ── */
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  nav .inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 28px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 128px 0 80px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 7vw, 64px);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--muted);
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 520px;
+    font-weight: 300;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── Sections ── */
+  section {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 30px;
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  p + p { margin-top: 14px; }
+
+  /* ── Image cards (glossy) ── */
+  .img-card {
+    margin: 40px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    position: relative;
+  }
+
+  .img-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 12px;
+  }
+
+  .img-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .img-caption {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .img-caption span { color: #2a2a2a; }
+
+  /* ── Feature list ── */
+  .feat-list {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .feat-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .feat-row:last-child { border-bottom: 1px solid var(--border); }
+
+  .feat-key {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    padding-top: 2px;
+    display: inline-block;
+    vertical-align: middle;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,215,64,0.06);
+    color: #ffd54f;
+    border: 1px solid rgba(255,215,64,0.08);
+  }
+
+  .feat-val {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── Pipeline ── */
+  .pipeline { margin-top: 32px; display: flex; flex-direction: column; gap: 28px; }
+
+  .pipe-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg1);
+  }
+
+  .pipe-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg2);
+  }
+
+  .pipe-n {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    border: 1px solid var(--border2);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .pipe-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .pipe-steps {
+    padding: 0;
+  }
+
+  .pipe-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.55;
+  }
+
+  .pipe-step:last-child { border-bottom: none; }
+
+  .pipe-step-n {
+    color: #2a2a2a;
+    min-width: 14px;
+    font-size: 11px;
+  }
+
+  .pipe-step-text { color: #555; }
+  .pipe-step-text code { color: #888; background: none; font-family: var(--mono); }
+
+
+
+pre {
+  position: relative;
+  overflow-x: auto;
+
+  margin: 32px 0;
+  padding: 54px 24px 24px;
+
+  background: #0f1115;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    0 10px 30px rgba(0,0,0,0.25);
+}
+
+/* Top header bar */
+pre::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+
+  width: 100%;
+  height: 42px;
+
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+
+  border-radius: 14px 14px 0 0;
+}
+
+/* Language label */
+pre::before {
+  content: attr(data-lang);
+
+  position: absolute;
+  top: 13px;
+  right: 16px;
+
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+
+  color: #9f9f9f;
+
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  z-index: 2;
+}
+
+/* Terminal dots */
+pre .dots {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+
+  display: flex;
+  gap: 6px;
+
+  z-index: 2;
+}
+
+pre .dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+}
+
+/* Main code */
+pre code {
+  display: block;
+
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.85;
+
+  color: #d8d8d8;
+  background: transparent;
+
+  white-space: pre;
+}
+
+/* Inline code */
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+
+  color: #ececec;
+
+  background: rgba(255,255,255,0.06);
+
+  padding: 2px 7px;
+
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+  /* Inline highlighted key term */
+.key-term {
+  color: #ffffff;
+  font-weight: 500;
+  position: relative;
+}
+
+.key-term::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1px;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  z-index: -1;
+  border-radius: 2px;
+}
+
+  /* Closing card styles */
+  .closing-card {
+    margin: 16px auto 0;
+    padding: 28px;
+    max-width: 820px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+    text-align: center;
+  }
+
+  .closing .lead {
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+
+  .closing .takeaway {
+    margin: 12px auto;
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 720px;
+  }
+
+  .closing-points {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 18px 0 8px;
+    padding: 0;
+  }
+
+  .closing-points li {
+    background: rgba(255,255,255,0.02);
+    color: var(--muted);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.03);
+    min-width: 200px;
+  }
+
+  .closing .link-row { margin-top: 18px; }
+
+  .link-btn {
+    background: transparent;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+
+  .link-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.02); }
+
+  /* ── API endpoints ── */
+  .endpoints { margin-top: 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .endpoint {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .endpoint:last-child { border-bottom: 1px solid var(--border); }
+
+  .method {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 3px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border2);
+    color: var(--dim);
+    min-width: 46px;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .endpoint-info { flex: 1; }
+
+  .endpoint-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .endpoint-desc {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ── Data table ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+  }
+
+  .data-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 400;
+  }
+
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .data-table td:first-child {
+    font-family: var(--mono);
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .data-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 28px;
+    background: var(--bg1);
+  }
+
+  /* ── Reliability grid ── */
+  .rel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 28px;
+  }
+
+  .rel-cell {
+    background: var(--bg1);
+    padding: 22px;
+  }
+
+  .rel-cell h3 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .rel-cell p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  /* ── Obs rows ── */
+  .obs-rows { margin-top: 28px; display: flex; flex-direction: column; gap: 0; }
+
+  .obs-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .obs-row:last-child { border-bottom: 1px solid var(--border); }
+
+  .obs-dot {
+    width: 4px; height: 4px;
+    background: var(--dim);
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .obs-row h3 { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .obs-row p { font-size: 13px; color: var(--muted); margin: 0; font-weight: 300; }
+
+  /* ── Closing ── */
+  .closing {
+    padding: 72px 0 80px;
+    text-align: center;
+  }
+
+  .closing h2 {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  .closing p {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--muted);
+  }
+
+  .link-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+    justify-content: center;
+  }
+
+  .link-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 9px 18px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .link-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── Scroll fade in ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <span class="nav-logo">vigilens</span>
+    <ul class="nav-links">
+      <li><a href="#overview">overview</a></li>
+      <li><a href="#architecture">architecture</a></li>
+      <li><a href="#demo">demo</a></li>
+      <li><a href="#implementation">implementation</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero fade-in">
+    <p class="hero-eyebrow">open source &mdash; video intelligence</p>
+    <h1>Real-time CCTV<br><em>that actually thinks.</em></h1>
+    <p class="hero-desc">Vigilens monitors live <span class="key-term">RTSP</span> streams continuously, detects events from natural-language queries, and makes every minute of footage searchable after the fact.</p>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <span class="meta-label">stack</span>
+        <span class="meta-value">Python 3.11+</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">queue</span>
+        <span class="meta-value"><span class="key-term">Redis Streams</span></span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">memory</span>
+        <span class="meta-value"><span class="key-term">SQLite</span></span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">llm</span>
+        <span class="meta-value"><span class="key-term">Gemini</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <section id="overview" class="fade-in">
+    <p class="section-label">The camera nobody watches</p>
+    <h2>Why existing CCTV systems stay passive</h2>
+    <p>A few months ago I noticed something strange about surveillance systems.</p>
+    <p>Modern cameras capture incredibly detailed footage, yet the way we interact with them hasn't changed much. A camera records. Something happens. A person opens the footage later and starts searching.</p>
+    <p>The camera saw everything. The problem is that nobody was actually watching.</p>
+    <p>That observation eventually became Vigilens - an experiment in turning live video streams into something that can understand, remember, and answer questions about what it sees.</p>
+
+    <div class="feat-list">
+      <div class="feat-row">
+        <span class="feat-key">rtsp_monitoring</span>
+        <span class="feat-val">Watches live streams without interruption, chunking and screening frames on the fly.</span>
+      </div>
+      <div class="feat-row">
+        <span class="feat-key">trigger_queries</span>
+        <span class="feat-val">Define events in plain English - "person falling", "fire" - with per-query confidence thresholds.</span>
+      </div>
+      <div class="feat-row">
+        <span class="feat-key">webhook_alerts</span>
+        <span class="feat-val">Verified detections fire webhooks with clip context and timestamps, with automatic retry.</span>
+      </div>
+      <div class="feat-row">
+        <span class="feat-key">searchable_memory</span>
+        <span class="feat-val">SQLite stores all events and activity timelines. Query past footage in natural language, any time.</span>
+      </div>
+      <div class="feat-row">
+        <span class="feat-key">activity_timeline</span>
+        <span class="feat-val">Periodic scene summaries build a continuous, compactable record of what happened on each camera.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture" class="fade-in">
+    <p class="section-label">Architecture</p>
+    <h2>Teaching cameras what matters</h2>
+    <p>Most footage is boring. Hallways stay empty. Cars stay parked. Nothing happens.</p>
+    <p>Sending every second of video to a frontier multimodal model would be wasteful. The system therefore starts with a lightweight screening stage - a <span class="key-term">Qwen3-VL reranker</span> that filters frames before anything expensive runs. Only relevant chunks make it to Gemini for structured verification.</p>
+    <p>Three purpose-built pipelines coordinate through Redis Streams consumer groups. Object storage holds clips; SQLite holds all queryable state.</p>
+
+    <div class="img-card" style="margin-top:32px;">
+      <img src="assets/vigilens-arch.png" alt="Vigilens system architecture diagram">
+      <div class="img-caption">
+        system architecture
+        <span>vigilens-arch.png</span>
+      </div>
+    </div>
+
+    <div class="img-card">
+      <img src="assets/vigilens-pipeline.png" alt="Vigilens pipeline detail">
+      <div class="img-caption">
+        pipeline view
+        <span>vigilens-pipeline.png</span>
+      </div>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-block">
+        <div class="pipe-head">
+          <span class="pipe-n">01</span>
+          <span class="pipe-title">Event detection pipeline</span>
+        </div>
+        <div class="pipe-steps">
+          <div class="pipe-step"><span class="pipe-step-n">1</span><span class="pipe-step-text"><code>POST /streams/submit</code> enqueues the stream job</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">2</span><span class="pipe-step-text">Stream worker chunks RTSP and screens with Qwen3-VL reranker</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">3</span><span class="pipe-step-text">Relevant chunks uploaded and pushed to <code>llm.jobs</code></span></div>
+          <div class="pipe-step"><span class="pipe-step-n">4</span><span class="pipe-step-text">LLM worker verifies events via Gemini structured output</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">5</span><span class="pipe-step-text">Verified detections persist to <code>events</code> table with dedupe guard</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">6</span><span class="pipe-step-text">Webhooks fire with retry</span></div>
+        </div>
+      </div>
+
+      <div class="pipe-block">
+        <div class="pipe-head">
+          <span class="pipe-n">02</span>
+          <span class="pipe-title">Activity timeline pipeline</span>
+        </div>
+        <div class="pipe-steps">
+          <div class="pipe-step"><span class="pipe-step-n">1</span><span class="pipe-step-text">Stream worker samples frames in-memory - no dump files</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">2</span><span class="pipe-step-text">Clip builder creates short clips and uploads to MinIO</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">3</span><span class="pipe-step-text">Scene jobs enqueued to <code>scene.jobs</code></span></div>
+          <div class="pipe-step"><span class="pipe-step-n">4</span><span class="pipe-step-text">Scene worker summarizes each clip</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">5</span><span class="pipe-step-text">Summaries persist to <code>scene_timeline</code> with compaction support</span></div>
+        </div>
+      </div>
+
+      <div class="pipe-block">
+        <div class="pipe-head">
+          <span class="pipe-n">03</span>
+          <span class="pipe-title">Query pipeline</span>
+        </div>
+        <div class="pipe-steps">
+          <div class="pipe-step"><span class="pipe-step-n">1</span><span class="pipe-step-text"><code>POST /query</code> accepts natural language + optional camera filter</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">2</span><span class="pipe-step-text">Query router selects <code>event</code> or <code>activity</code> path automatically</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">3</span><span class="pipe-step-text">SQLite returns matching rows with clip references</span></div>
+          <div class="pipe-step"><span class="pipe-step-n">4</span><span class="pipe-step-text">API returns normalized results with timestamp, summary, clip URL, confidence</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo screenshots -->
+  <section id="demo" class="fade-in">
+    <p class="section-label">Demo</p>
+    <h2>What the system actually looks like</h2>
+    <p>Three views: system configuration, live streaming with alerts, and historical query.</p>
+  </section>
+
+  <div class="img-card fade-in">
+    <img src="assets/demo_connect.png" alt="Vigilens system setup - configure streams, triggers, and thresholds">
+    <div class="img-caption">
+      system configuration
+      <span>demo_connect.png</span>
+    </div>
+  </div>
+
+  <div class="img-card fade-in">
+    <img src="assets/demo_stream.png" alt="Vigilens live stream view with real-time event detection">
+    <div class="img-caption">
+      live stream + event detection
+      <span>demo_stream.png</span>
+    </div>
+  </div>
+
+  <div class="img-card fade-in">
+    <img src="assets/demo_query.png" alt="Vigilens natural language query over video history">
+    <div class="img-caption">
+      natural language query
+      <span>demo_query.png</span>
+    </div>
+  </div>
+
+  <!-- Memory -->
+  <section class="fade-in">
+    <p class="section-label">Memory</p>
+    <h2>Making video queryable</h2>
+    <p>Detection is only half the problem. A system that alerts but can't answer questions about the past isn't much better than a passive archive.</p>
+    <p>Every verified event and every scene summary lands in <span class="key-term">SQLite</span> with a timestamp, camera ID, clip reference, and confidence score. The query endpoint accepts plain English and routes automatically - to the event store for specific incidents, to the activity timeline for broader questions about what was happening.</p>
+    <p>The result is footage you can actually ask things.</p>
+  </section>
+
+  <!-- Reliability -->
+  <section class="fade-in">
+    <p class="section-label">Reliability</p>
+    <h2>Built to stay up</h2>
+    <p>Production deployments need to survive worker crashes, duplicate events, and disk pressure. Each of these is addressed explicitly.</p>
+
+    <div class="rel-grid">
+      <div class="rel-cell">
+        <h3>Consumer group isolation</h3>
+        <p>Redis Streams consumer groups prevent multiple workers from processing the same job simultaneously.</p>
+      </div>
+      <div class="rel-cell">
+        <h3>Crash recovery</h3>
+        <p>Stale messages are automatically reclaimed via <code>XAUTOCLAIM</code> after a worker crash.</p>
+      </div>
+      <div class="rel-cell">
+        <h3>Idempotency guard</h3>
+        <p>A <code>dedupe_key</code> on every event row prevents duplicate inserts across retries.</p>
+      </div>
+      <div class="rel-cell">
+        <h3>Disk control</h3>
+        <p>In-memory frame sampling for the scene branch - no frame dump files, controlled disk growth.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Observability -->
+  <section class="fade-in">
+    <p class="section-label">Observability</p>
+    <h2>Understanding what the system is doing</h2>
+    <p>Every API call, worker job, and LLM invocation is captured end-to-end. Large payloads like raw video matrices are dynamically filtered from the UI. Tracing safely no-ops when credentials are absent.</p>
+
+    <div class="obs-rows">
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <h3>FastAPI endpoints</h3>
+          <p>Real-time insights into <code>submit_stream</code> and <code>query</code> executions.</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <h3>Workers</h3>
+          <p>End-to-end tracing of stream consumption and LLM processing jobs.</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <h3>LLM calls</h3>
+          <p>Prompts, multimodal verification latency, and output token counts.</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <h3>Event pipeline</h3>
+          <p>Deduplication metrics and database persistence timing.</p>
+        </div>
+      </div>
+    </div>
+
+    <pre data-lang="env"><code>VIGILENS_OPIK_ENABLED=true
+OPIK_PROJECT_NAME="vigilens"
+OPIK_WORKSPACE="your-workspace-name"
+OPIK_API_KEY="your-opik-api-key"</code></pre>
+  </section>
+
+  <!-- Implementation Notes -->
+  <section id="implementation" class="fade-in">
+    <p class="section-label">Implementation Notes</p>
+    <h2>Running it yourself</h2>
+    <p>Prerequisites: Python 3.11+, <span class="key-term">FFmpeg</span> on PATH, <span class="key-term">Redis</span>, an S3-compatible store (<span class="key-term">MinIO</span>), a Screener endpoint (<span class="key-term">Qwen3-VL</span>, deployable on Modal), and a <span class="key-term">Gemini</span> API key.</p>
+
+    <pre data-lang="bash"><code># 1. install
+python -m venv env && source env/bin/activate
+pip install -e . && pip install -e ".[test]"
+
+# 2. configure
+cp .env.example .env
+# set REDIS_URL, S3_ENDPOINT, S3_BUCKET,
+# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+# SCREENER_BASE_URL, SCREENER_API_KEY, LLM_API_KEY
+
+# 3. init db
+make db-init
+
+# 4. run services (separate terminals)
+make api
+make stream-worker
+make llm-worker
+make scene-worker</code></pre>
+
+    <h3 style="margin-top: 36px; margin-bottom: 16px; color: var(--muted); font-weight: 400;">Endpoints</h3>
+
+    <div class="endpoints">
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/streams/submit</div>
+          <div class="endpoint-desc">Creates and enqueues a stream processing job with trigger queries and webhook targets.</div>
+        </div>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/streams/{stream_id}</div>
+          <div class="endpoint-desc">Returns stream lifecycle state from SQLite.</div>
+        </div>
+      </div>
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/query</div>
+          <div class="endpoint-desc">Natural-language query over event and activity memory, with optional camera filter.</div>
+        </div>
+      </div>
+    </div>
+
+    <pre data-lang="bash"><code>curl -X POST http://localhost:8000/streams/submit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "camera_id": "cam_1",
+    "rtsp_url": "rtsp://example.local/live",
+    "trigger_queries": [
+      {"query": "person falling", "threshold": 0.55},
+      {"query": "fire", "threshold": 0.70}
+    ],
+    "webhook_urls": ["https://example.com/webhook"],
+    "chunk_seconds": 10,
+    "fps": 1
+  }'</code></pre>
+
+    <pre data-lang="bash"><code>curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "did someone fall", "camera_id": "cam_1"}'</code></pre>
+
+    <pre data-lang="json"><code>{
+  "route": "event",
+  "results": [{
+    "source": "event",
+    "timestamp": "2026-04-15 12:00:00",
+    "camera_id": "cam_1",
+    "summary": "person fell near stairs",
+    "clip_url": "https://...",
+    "confidence": 1.0
+  }]
+}</code></pre>
+
+    <h3 style="margin-top: 36px; margin-bottom: 16px; color: var(--muted); font-weight: 400;">Data model</h3>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>table</th>
+            <th>purpose</th>
+            <th>key fields</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>streams</td>
+            <td>Stream lifecycle state</td>
+            <td>queued · processing · completed · failed</td>
+          </tr>
+          <tr>
+            <td>events</td>
+            <td>Verified event memory</td>
+            <td>dedupe_key, clip_url, confidence</td>
+          </tr>
+          <tr>
+            <td>scene_timeline</td>
+            <td>Activity summary memory</td>
+            <td>summary, compaction support</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top: 36px; margin-bottom: 12px; color: var(--muted); font-weight: 400;">Testing</h3>
+    <pre data-lang="bash"><code>uv run --active pytest
+
+make test-unit
+make test-integration
+make test-contract</code></pre>
+  </section>
+
+  <!-- Closing -->
+<div class="closing fade-in">
+  <p class="section-label">Closing thoughts</p>
+
+  <h2>What happened?</h2>
+
+  <p>
+    For decades, the answer lived somewhere inside hours of footage.
+  </p>
+</br>
+  <p>
+    VigiLens explores a different possibility - one where cameras don't just record events, </br>
+    but help us understand them.
+  </p>
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
